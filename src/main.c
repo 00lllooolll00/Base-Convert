@@ -1,23 +1,35 @@
+#include <getopt.h>
 #include "conv.h"
-
-#define CMD_EQUAL(input_cmd, const_str) (strcmp((input_cmd), (const_str)) == 0)
 
 /* 
 options[7:0] 每一位的定义
-[7]: 保留                                            默认为0
+[7]: 开启位宽限制                        0：关闭 1：开启 默认关闭
 [6]：十六进制数是否大写                   0：小写 1：大写 默认开启
-[5]：十六进制是否显示 "0x"                0：关闭 1：开启 默认开启
-[4]: 二进制是否显示 "0b"                 0：关闭 1：开启 默认开启
-[3]: 二进制是否四位分割(不足补0)           0：关闭 1：开启 默认关闭
+[5]：十六、二进制是否显示 "0x/0b"          0：关闭 1：开启 默认开启
+[4]: 开启任意进制转换                     0：关闭 1：开启 默认关闭
+
+[3]: 十六、二进制是否四位分割(不足补0)      0：关闭 1：开启 默认关闭
 [2]: 转换成十进制                        0：关闭 1：开启 默认开启
 [1]: 转换成十六进制                      0：关闭 1：开启 默认开启
 [0]: 转换成二进制                        0：关闭 1：开启 默认开启
 
-默认 0b 0111 0111 = 0x77
+默认 0b 0110 0111 = 0x67
 */
-static uint8_t options = 0x77;
+static const struct option long_options[] = {
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'v'},
+    {"hex", no_argument, 0, 'x'},
+    {"bin", no_argument, 0, 'b'},
+    {"upper", no_argument, 0, 'u'},
+    {"width", required_argument, 0, 'w'},
+    {"opt", required_argument, 0, 'o'},
+    {0, 0, 0, 0} // 哨兵
+};
+
+static uint8_t options = 0x67;
 static char hex_buffer[BUFFER_SIZE]; // 十六进制缓冲区
 static char bin_buffer[BUFFER_SIZE]; // 二进制缓冲区
+static char any_buffer[BUFFER_SIZE]; // 任意进制缓冲区
 
 /**
  * @brief 命令解析
@@ -25,39 +37,13 @@ static char bin_buffer[BUFFER_SIZE]; // 二进制缓冲区
  * @param argc 参数的数目
  * @param argv 存储命令的参数
  * @param val  输入的值的指针
+ * @param width 位宽限制
  * @return CmdType_t 
  */
-CmdType_t command_parse(int argc, char *argv[], int64_t *val)
+CmdType_t command_parse(int argc, char *argv[], int64_t *val, uint8_t *width)
 {
     // 只输入了一个参数 返回帮助
     if (argc == 1) return CMD_HELPER;
-
-    // 输入两个参数
-    else if (argc == 2)
-    {
-        // 帮助信息
-        if (CMD_EQUAL(argv[1], "-h") || CMD_EQUAL(argv[1], "--help"))
-        {
-            return CMD_HELPER;
-        }
-        // 版本号
-        else if (CMD_EQUAL(argv[1], "-v") || CMD_EQUAL(argv[1], "--version"))
-        {
-            return CMD_VERSION;
-        }
-        // 看是否是合法数字
-        else
-        {
-            RadixType_t res;
-
-            res = detect_input_radix_type(argv[1], val);
-#if defined DEBUG
-            printf("InputType:%d\n", res);
-#endif
-            if (res == INPUT_INVALID) return CMD_UNKOWN;
-            else return CMD_DEFAULT;
-        }
-    }
 }
 
 /**
@@ -90,11 +76,10 @@ int print_help(void)
     printf("  $ bconv 255\n");
     printf("  Dec: 255\n");
     printf("  Hex: 0xFF\n");
-    printf("  Bin: 1111 1111\n\n");
+    printf("  Bin: 0b11111111\n\n");
 
     printf("输入控制:\n");
-    printf("  -i <base>     强制指定输入进制 (2-36)\n");
-    printf("                如果省略，程序将尝试自动推断 (0x=Hex, 0b=Bin, 其他=Dec)\n\n");
+    printf("  -无           系统会自己推断输入的进制\n");
 
     printf("输出控制 (互斥):\n");
     printf("  -x, --hex     仅输出十六进制\n");
@@ -125,13 +110,18 @@ int print_help(void)
 
 int printf_err(void)
 {
-    fprintf(stderr, "err\n");
+    // TODO:标准错误输出流
+    fprintf(stderr, "\n");
+    print_help();
+    return 1;
 }
 
 int main(int argc, char *argv[])
 {
-    int64_t input_val = 0;
-    CmdType_t type = command_parse(argc, argv, &input_val);
+    int64_t input_val = 0; // 输入的值
+    int64_t bits_limit = 0; // 位宽限制
+    int64_t any_base = 0; // 指定进制
+    CmdType_t type = command_parse(argc, argv, &input_val, &bits_limit);
 
 #if defined DEBUG
     printf("type:%d\n", type);
@@ -145,14 +135,21 @@ int main(int argc, char *argv[])
     {
         return print_version();
     }
-    else if (type == CMD_DEFAULT)
+    else if (type == CMD_CONVERT)
     {
 #if defined DEBUG
         printf("input_val = %ld, type = %d\n", input_val, type);
-        convert_to_radix(options, input_val, bin_buffer, hex_buffer);
-#else
-
 #endif
+        convert_to_radix(options, input_val, bits_limit, hex_buffer, bin_buffer);
+        if (BIT_TEST(options), OPT_ANY_BASE)
+        {
+            conver_to_any_radix(input_val, any_base, any_buffer);
+            printf("%d Radix:%s\n", any_base, any_buffer);
+        }
+    }
+    else if (type == CMD_INVALID_NUM)
+    {
+        // TODO：错误输出
     }
 
     return 0;

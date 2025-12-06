@@ -11,11 +11,11 @@
 #define BCONV_VERSION       "0.0.1"
 #define BUFFER_SIZE         100
 
-#define OPT_RESERVED        7
+#define OPT_bits_limit      7
 #define OPT_HEX_UPPER       6
-#define OPT_HEX_PERFIX      5
-#define OPT_BIN_PERFIX      4
-#define OPT_BIN_SPLIT       3
+#define OPT_HEX_BIN_PERFIX  5
+#define OPT_ANY_BASE        4
+#define OPT_HEX_BIN_SPLIT   3
 #define OPT_RADIX_DEC       2
 #define OPT_RADIX_HEX       1
 #define OPT_RADIX_BIN       0
@@ -31,10 +31,10 @@
  */
 typedef enum
 {
-    CMD_UNKOWN = -1,
-    CMD_DEFAULT = 0,
-    CMD_HELPER,
-    CMD_VERSION,
+    CMD_INVALID_NUM = -1, // 非法数字
+    CMD_CONVERT = 0, // 转换
+    CMD_HELPER, // 获取帮助
+    CMD_VERSION, // 获取版本号
 
 } CmdType_t;
 
@@ -51,6 +51,7 @@ typedef enum
 } RadixType_t;
 
 RadixType_t detect_input_radix_type(const char *input, int64_t *dec_val);
-void convert_to_radix(uint8_t options, int64_t val, char *hex, char *bin);
+void convert_to_radix(uint8_t options, int64_t val, uint8_t bit_limit, char *hex, char *bin);
+void conver_to_any_radix(int64_t dec_val, int64_t base, char *buffer);
 
 #endif /* __CONV_H */
