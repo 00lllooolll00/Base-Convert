@@ -9,7 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 aux_source_directory(${CMAKE_SOURCE_DIR}/src SRC)
 
 include_directories( INC
-    ${CMAKE_SOURCE_DIR}/inc
+    ${CMAKE_SOURCE_DIR}/inc/
 )
 
 add_compile_definitions(DEF
