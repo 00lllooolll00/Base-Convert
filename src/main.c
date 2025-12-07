@@ -115,6 +115,9 @@ int main(int argc, char *argv[])
 
             // 自定义任意进制转换
             case 'c':
+                BIT_RESET(options, OPT_RADIX_BIN);
+                BIT_RESET(options, OPT_RADIX_HEX);
+                BIT_RESET(options, OPT_RADIX_DEC);
                 BIT_SET(options, OPT_CUSTOM_BASE);
 
                 temp = strtoll(optarg, &endptr, 10);
@@ -163,8 +166,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "输入的参数非法\n");
         exit(1);
     }
-
-    printf("input val : %ld\n", input_val);
 
     // 转换
     convert_to_radix(options, input_val, bits_limit, custom_base, hex_buffer, bin_buffer, custom_buffer);

@@ -36,7 +36,6 @@ bconv [选项] <数值>
 
 ```bash
 $ bconv 255
-input val : 255
 Dec:255
 Hex:FF
 Bin:11111111
@@ -74,7 +73,6 @@ Bin:11111111
 ### 基本转换
 ```bash
 $ bconv 0x3A
-input val : 58
 Dec:58
 Hex:3A
 Bin:111010
@@ -83,28 +81,24 @@ Bin:111010
 ### 二进制分组显示
 ```bash
 $ bconv -b -g 48879
-input val : 48879
 Bin:1011 1110 1110 1111
 ```
 
 ### 模拟 8 位溢出
 ```bash
 $ bconv -d -w 8 300
-input val : 300
 Dec:44
 ```
 
 ### 自定义进制
 ```bash
 $ bconv -c 16 255
-input val : 255
 Radix[16]:FF
 ```
 
 ### 带前缀和大写显示
 ```bash
 $ bconv -p -u 255
-input val : 255
 Dec:255
 Hex:0XFF
 Bin:0b11111111
@@ -114,7 +108,6 @@ Bin:0b11111111
 ```bash
 # 仅输出十六进制结果
 $ bconv -x 255
-input val : 255
 Hex:FF
 ```
 
